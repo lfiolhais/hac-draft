@@ -1,43 +1,84 @@
 [[intro]]
 == Introduction
 
-Lorem ipsum indexterm:[Lorem ipsum] dolor sit amet, consectetur adipiscing elit, sed do *eiusmod tempor* incididunt ut labore et dolore magna aliqua. Felis imperdiet proin fermentum leo vel orci porta. Volutpat lacus laoreet non curabitur indexterm:[curabitur] gravida indexterm:[gravida]. Posuere urna nec tincidunt praesent semper feugiat nibh. Elit ``ullamcorper`` dignissim cras tincidunt lobortis. Malesuada fames ac turpis egestas integer eget. Tristique sollicitudin nibh sit amet commodo. Sed felis eget velit aliquet. Sit amet aliquam id diam maecenas ultricies mi. Consectetur purus ut faucibus pulvinar. Lectus urna duis convallis convallis tellus id. Fermentum iaculis eu non diam. Feugiat in fermentum posuere urna nec tincidunt praesent semper feugiat. Urna nec tincidunt praesent semper feugiat nibh.
+Cryptographic operations are high-value targets for attackers that seek to
+extract sensitive data from a system. In RISC-V, such operations are performed
+using standard instructions, such as scalar or vector operations, which are
+susceptible to a set of side-channel attacks. In order to protect
+implementations that make use such instructions, obfuscation techniques can be
+applied at the software or hardware level. Providing obfuscation at the
+hardware level would make the code targetting such hardware non-portable, and
+providing obfuscation at the software level results in performance degradation.
 
-.Nonsensical code
-[source, python]
-----
-def banana_apple():
-    x = "banana"
-    y = "apple"
-    for i in range(len(x)):
-        print(x[i], y[i])
-        z = x + y
-    return z
+To tackle this problem, application-class computer architectures provide a
+performant and high assurance cryptographic engine. The engine ususally resides
+in the Root-of-Trust (RoT), outside the application processors (APs), and it
+has a bespoke interface that is vendor or microarchitecture specific. Despite
+meeting the security goals, the software used to program such an engine is
+specific to the target. Further, performance gains may be small because of the
+communication cost between the AP and the RoT. For server-class architectures,
+these accelerators are tightly coupled to the APs to ensure high-performance,
+but, once again, they require non-portable code.
 
-result = banana_apple()
-print("Result:", result)
-----
+This document describes the High Assurance Cryptography (HAC) extension for
+RISC-V. The goal of the extension is to provide a standardized architectural
+interface for cryptographic operations that need to be executed with high
+assurance guarantees, e.g., data can't be retrieved through side-channels,
+while maintaining high performance.
 
-Commodo viverra maecenas accumsan lacus. Vulputate odio ut enim blandit indexterm:[blandit] volutpat maecenas volutpat blandit. Urna porttitor rhoncus dolor purus non. Tellus mauris a diam maecenas sed. Vitae auctor eu augue ut lectus. Ridiculus mus mauris vitae ultricies leo integer. Consequat semper viverra nam *libero* justo laoreet sit amet. Pellentesque pulvinar pellentesque habitant morbi tristique senectus et netus et. Ac placerat vestibulum lectus mauris ``ultrices`` eros in cursus turpis. Accumsan in nisl nisi scelerisque eu ultrices vitae. Cras ornare arcu dui vivamus. Vitae congue mauris rhoncus aenean. Consequat mauris nunc congue nisi vitae suscipit tellus. Tempus egestas sed sed risus pretium quam vulputate dignissim. Quis varius quam quisque id diam vel. Mattis nunc sed blandit libero volutpat sed cras ornare arcu. Amet mauris commodo quis imperdiet massa tincidunt nunc.
+The HAC extension defines a new register file which holds secure cryptographic
+contexts (SCCs). Registers in the HAC extension are referred to as `H`
+registers. Accesses to HAC contexts can only be performed through HAC
+instructions. Data can be moved in and out of the register file using HAC's
+import and export instructions --- they are analagous to the standard RISC-V's
+loads and stores. Data that is exported from the register file is encrypted
+using a context transport key (CTK). The import operation decrypts the data,
+using the same CTK, and stores it in a given register. Registers can also be
+loaded using a set instruction. The set instruction performs the same operation
+as import without the need to decrypt the data, i.e., the data loaded is in
+plaintext. Each register can have a width of 128, 256, or 512 bits. The
+register width is referred to as `HLEN`. All registers have the same width. The
+HAC register file can have 8, 16, or 32 registers.
 
 [NOTE]
 ====
-The name RISC-V indexterm:[RISC-V] was chosen to represent the fifth major RISC ISA design from UC Berkeley (RISC-I cite:[riscI-isca1981], RISC-II cite:[Katevenis:1983], SOAR cite:[Ungar:1984], and SPUR cite:[spur-jsscc1989] were the first four). We also pun on the use of the Roman numeral "V" to signify "variations" and "vectors", as support for a range of architecture research, including various data-parallel accelerators, is an explicit goal of the ISA design.
+The term "register file" is used as a means to refer to a hart's private
+memory. A register file implementation is not mandated to use a particular
+memory primitive. Implementors are free to choose the memory primitive that
+better fits their goals.
 ====
 
-=== Sub Section of Introduction
+[NOTE]
+====
+Different widths of registers and number of registers are provided to offer
+flexibility in implementations. Server-class architectures will want to perform
+multiple cryptographic operations without paying for the import and export
+latency --- e.g., content delivery networks, cloud providers, etc. ---, whereas
+application-class or microcontroller-class architectures provide a smaller set
+of register for occasional usage --- e.g., connecting to websites, accessing
+encrypted storage, etc.
+====
 
-Pellentesque habitant morbi *tristique* senectus et netus et. Aliquam purus sit amet luctus. Odio eu ``feugiat`` pretium nibh ipsum consequat nisl vel. Euismod lacinia at quis risus sed vulputate odio ut. Eu sem integer vitae justo eget. Cursus euismod quis viverra nibh. Tempus egestas sed sed risus. Quis imperdiet massa tincidunt nunc pulvinar. Id venenatis a condimentum vitae sapien pellentesque habitant.
+All instructions described herein use the HAC registers, and obey the
+2-read-1-write register access constraint. Most HAC instructions provide Zkt
+guarantees.
 
-.Nonsensical wavedrom signals
-[wavedrom, svg]
-....
-{
-  "signal": [
-    { "name": "Clock", "wave": "P.......P" },
-    { "name": "Data", "wave": "x.x..xx.x" },
-    { "name": "Control", "wave": "0.1.01..0" },
-    { "name": "Error", "wave": "zZzZzZzZz" }
-  ]
-}
-....
+[[policies]]
+=== Policies
+In creating this proposal, we tried to adhere to the same policies as the other
+cryptograhic extensions, they are:
+
+* The extension will be designed to support _existing_ standardised
+  cryptographic constructs well. It will not try to support proposed standards,
+  or cryptographic constructs which exist only in academia. Cryptographic
+  standards which are settled upon concurrently with or after the RISC-V
+  cryptographic extension standardisation will be dealt with by future
+  additions to, or versions of, the RISC-V HAC extension.
+
+* Historically, there has been some discussion cite:[LSYRR:04] on how newly
+  supported operations in general-purpose computing might enable new bases for
+  cryptographic algorithms. The standard will not try to anticipate new useful
+  low-level operations which _may_ be useful as building blocks for future
+  cryptographic constructs.
+
+

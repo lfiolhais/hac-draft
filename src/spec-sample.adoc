@@ -72,6 +72,7 @@ include::contributors.adoc[]
 
 include::intro.adoc[]
 include::chapter2.adoc[]
+include::chapter3.adoc[]
 
 // The index must precede the bibliography
 include::index.adoc[]

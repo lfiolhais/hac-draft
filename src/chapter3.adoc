@@ -1,0 +1,133 @@
+[[chapter3]]
+== Instructions
+
+=== h.import
+
+Synopsis::
+Import context instruction.
+
+Mnemonic::
+h.import hd, imm[rs1]
+
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+{bits: 7, name: 0x00},
+{bits: 5, name: 'hd'},
+{bits: 3, name: 0x0},
+{bits: 5, name: 'rs1'},
+{bits: 11, name: 'imm'},
+]}
+....
+
+Description::
+This instruction loads `HLEN` bits from the address `rs1+imm`, and it
+decrypts its contents using CTK. The result of the decryption is stored in
+`hd`. If the hart doesn't support misaligned loads, the address must be aligned
+to `HLEN/8` bytes. Otherwise, an exception is generated with code "Load Address
+Misaligned". This instruction must _always_ be implemented such that its
+execution latency does not depend on the data loaded.
+
+Operation::
+[source,sail]
+--
+--
+
+=== h.export
+
+Synopsis::
+Export context instruction.
+
+Mnemonic::
+h.export hs1, imm[rs1]
+
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+{bits: 7, name: 0x00},
+{bits: 5, name: 'offset'},
+{bits: 3, name: 0x0},
+{bits: 5, name: 'rs1'},
+{bits: 5, name: 'hs1'},
+{bits: 7, name: 'offset'},
+]}
+....
+
+Description::
+This instruction stores `HLEN` bits from register `hs1` to the address
+`rs1+imm`. The stored data is encrypted using CTK. If the hart doesn't support
+misaligned stores, the address must be aligned to `HLEN/8` bytes. Otherwise, an
+exception is generated with code "Store Address Misaligned". This instruction
+must _always_ be implemented such that its execution latency does not depend on
+the data being stored.
+
+Operation::
+[source,sail]
+--
+--
+
+=== h.set
+
+Synopsis::
+Set context instruction.
+
+Mnemonic::
+h.set hd, imm[rs1]
+
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+{bits: 7, name: 0x00},
+{bits: 5, name: 'hd'},
+{bits: 3, name: 0x0},
+{bits: 5, name: 'rs1'},
+{bits: 11, name: 'imm'},
+]}
+....
+
+Description::
+This instruction loads `HLEN` bits from the address `rs1+imm` to `hd`. No
+decryption operation is performed. If the hart doesn't support misaligned
+loads, the address must be aligned to `HLEN/8` bytes. Otherwise, an exception
+is generated with code "Load Address Misaligned".
+
+Operation::
+[source,sail]
+--
+--
+
+=== h.exe
+
+Synopsis::
+Export context instruction.
+
+Mnemonic::
+h.exe hd, hs1, hs2
+
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+{bits: 7, name: 0x00},
+{bits: 5, name: 'hd'},
+{bits: 3, name: 0x0},
+{bits: 5, name: 'hs1'},
+{bits: 5, name: 'hs2'},
+{bits: 2, name: 0x0},
+]}
+....
+
+Description::
+This instruction executes an operation using source operands `hs1` and `hs2`,
+and stores the result in operand `hd`. If any operand can't be accessed using
+the current CTK, an illegal instruction exception is triggered. This
+instruction must _always_ be implemented such that its execution latency does
+not depend on the data being operated on.
+
+Operation::
+[source,sail]
+--
+--
