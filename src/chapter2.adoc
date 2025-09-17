@@ -1,6 +1,62 @@
-[[chapter2]]
-[[ctk]]
-== Context Transport Key
+[[runtime]]
+== HAC Programmer's Model
+
+The HAC extension adds up to 32 HAC registers, and x unpriviliged CSRs to a
+base scalar RISC-V ISA.
+
+=== HAC Registers
+
+The HAC extension adds up to 32 HAC registers to a base scalar RISC-V ISA.
+
+Each HAC register has a fixed `HLEN` bits of state.
+
+=== HAC Context Status in `mstatus`
+
+A HAC context status field, `HACS`, is added to `mstatus[XX:YY]` and shadowed
+in `sstatus[XX:YY]`. It is defined analogously to the floating-point and vector
+context status fields, `FS` and `VS`.
+
+Attempts to execute any HAC instruction, or to access the HAC CSRs, raise
+an illegal-instruction exception when `mstatus.HACS` is set to Off.
+
+When `mstatus.HACS` is set to Initial or Clean, executing any instruction that
+changes HAC state, including the HAC CSRs, will change `mstatus.HACS` to Dirty.
+Implementations may also change mstatus.HACS from Initial or Clean to Dirty at
+any time, even when there is no change in HAC state.
+
+If `mstatus.HACS` is Dirty, `mstatus.SD` is 1; otherwise, `mstatus.SD` is set
+in accordance with existing specifications.
+
+Implementations may have a writable `misa.HAC` field. Analogous to the way in
+which the floating-point and vector unit are handled, the `mstatus.HACS` field
+may exist even if `misa.HAC` is clear.
+
+=== HAC Context Status in `vsstatus`
+
+When the hypervisor extension is present, a HAC context status field, `HACS`,
+is added to `vsstatus[XX:YY]`. It is defined analogously to the floating-point
+and vector context status fields, `FS` and `VS`.
+
+When V=1, both `vsstatus.HACS` and `mstatus.HACS` are in effect: attempts to
+execute any HAC instruction, or to access the HAC CSRs, raise an
+illegal-instruction exception when either field is set to Off.
+
+When V=1 and neither `vsstatus.HACS` nor `mstatus.HACS` is set to Off,
+executing any instruction that changes HAC state, including the HAC CSRs, will
+change both `mstatus.HACS` and `vsstatus.HACS` to Dirty. Implementations may
+also change `mstatus.HACS` or `vsstatus.HACS` from Initial or Clean to Dirty at
+any time, even when there is no change in vector state.
+
+If `vsstatus.HACS` is Dirty, `vsstatus.SD` is 1; otherwise, `vsstatus.SD` is
+set in accordance with existing specifications.
+
+If `mstatus.HACS` is Dirty, `mstatus.SD` is 1; otherwise, `mstatus.SD` is set
+in accordance with existing specifications.
+
+For implementations with a writable misa.HAC field, the `vsstatus.HACS` field
+may exist even if `misa.HAC` is clear.
+
+=== Context Transport Key
 
 The Context Transport Key (CTK) is always stored in the `H` register with the
 highest ID --- `H7`, `H15`, or `H31`. The CTK can only be modified in effective
