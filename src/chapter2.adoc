@@ -1,12 +1,13 @@
 [[chapter2]]
+[[ctk]]
 == Context Transport Key
 
 The Context Transport Key (CTK) is always stored in the `H` register with the
 highest ID --- `H7`, `H15`, or `H31`. The CTK can only be modified in effective
 privilege mode M. Attempting to decode an HAC instruction which modifies the
 CTK outside of effective privilege mode M results in an exception with code
-"Illegal Instruction". A CTK can be loaded using set or import instructions.
-The CTK may ignore writes. The CTK register follows the WARL behavior.
+"Illegal Instruction". A CTK is loaded using a dedicated set or import
+instruction. The CTK register may ignore writes, and follows the WARL behavior.
 
 [NOTE]
 ====
@@ -20,7 +21,8 @@ CTK is encoded in an HAC register instead of a CSR because its width is larger
 than XLEN.
 ====
 
-Import and export operations use the currently loaded CTK to import and export
-the data in each register. Registers loaded under a CTK X can only be used when
-CTK X is loaded. Attempting to use a register with a different CTK Y results in
-an exception with code "Illegal Instruction".
+Import and export operations to other HAC registers use the currently loaded
+CTK to import and export data in each register. Registers loaded under a CTK X
+can only be used when CTK X is loaded. Attempting to use a register with a
+different CTK Y results in an exception with code "Illegal Instruction".
+
