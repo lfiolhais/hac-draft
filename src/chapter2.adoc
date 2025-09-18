@@ -56,7 +56,7 @@ in accordance with existing specifications.
 For implementations with a writable misa.HAC field, the `vsstatus.HACS` field
 may exist even if `misa.HAC` is clear.
 
-=== HAC Runtime (`hacr`) Register
+=== HAC Runtime (`mhacr`) Register
 
 HAC allows SCCs of different sizes to be loaded into the register file. The
 size of an SCC is not known at compile-time and has to be obtained at runtime
@@ -72,13 +72,13 @@ Implementations with 16 registers in the HAC register file must also implement
 an LMUL value of 8. Implementations with 32 registers in the HAC file must also
 implement an LMUL value of 8 and 16.
 
-The WARL XLEN-wide HAC Runtime CSR, `hacr` provides an interface for software
-to interpret and manage the SCC allocations in the register file.
+The WARL XLEN-wide HAC Runtime CSR, `mhacr` provides an interface for software
+to interpret and manage the SCC allocations in the register file at machine-level.
 
 Each SCC must use a power of two HAC registers. When an SCC allocates more than
 one register, they must be contiguous. HAC register groups can't wraparound.
 
-The `hacr` register contains a slot, `hacmulN` and `hacmulN_valid`, for each
+The `mhacr` register contains a slot, `hacmulN` and `hacmulN_valid`, for each
 HAC register, which indicates how many registers an operand is using and the
 validity of the register, respectively.
 
@@ -99,7 +99,7 @@ validity of the register, respectively.
 ====
 The architecture deliberately disallows the same HAC register to be used by two
 or more SCCs --- i.e., fractional LMULs. The main rationale for this decision
-is to reduce the complexity of the software that manages the `hacr` and
+is to reduce the complexity of the software that manages the `mhacr` and
 simplify the slot encoding.
 ====
 
@@ -186,7 +186,7 @@ don't care.
 When `hacmulN_valid` is 0, all encodings in the corresponding `hacmulN` are
 reserved.
 
-On reset, the `hacr` register contains zeroes.
+On reset, the `mhacr` register contains zeroes.
 
 === Context Transport Key
 
