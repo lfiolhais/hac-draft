@@ -188,8 +188,7 @@ The validity of a HAC register group is always given by the least significant
 `hacmul` ID. The remaining bits in the slots of the HAC register group are
 don't care.
 
-When `hacmulN_valid` is 0, all encodings in the corresponding `hacmulN` are
-reserved.
+When `hacmulN_valid` is 0, `hacmulN` must contain zeroes.
 
 === Context Transport Key
 
