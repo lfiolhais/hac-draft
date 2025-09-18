@@ -186,8 +186,6 @@ don't care.
 When `hacmulN_valid` is 0, all encodings in the corresponding `hacmulN` are
 reserved.
 
-On reset, the `mhacr` register contains zeroes.
-
 === Context Transport Key
 
 The Context Transport Key (CTK) is always stored in the `H` register with the
