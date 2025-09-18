@@ -185,8 +185,9 @@ eight are reserved.
 ....
 
 The validity of a HAC register group is always given by the least significant
-`hacmul` ID. The remaining bits in the slots of the HAC register group are
-don't care.
+`hacmul` ID. When a group is allocated, the implementation must clear the valid
+bits for all register IDs in the group that are different than the least
+significant ID.
 
 When `hacmulN_valid` is 0, `hacmulN` must contain zeroes.
 
