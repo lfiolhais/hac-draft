@@ -103,18 +103,31 @@ is to reduce the complexity of the software that manages the `mhacr` and
 simplify the slot encoding.
 ====
 
-When LMUL=2, the HAC register group contains HAC register `h` __n__ and HAC
-register `h` __n__+1, providing twice the HAC length in bits.  Instructions
-specifying an LMUL=2 HAC register group with an odd-numbered HAC register are
-reserved.
+An HAC implementation with 8 registers, only has access to even numbered
+register IDs. Moreover, for the same implementation, slot `hacmul14` and all
+odd numbered slots are WPRI.
 
-When LMUL=4, the HAC register group contains four HAC registers, and
-instructions specifying an LMUL=4 HAC register group using HAC register numbers
-that are not multiples of four are reserved.
+When LMUL=2 and the implementation supports more than 8 registers, the HAC
+register group contains HAC register `h` __n__ and HAC register `h` __n__+1,
+providing twice the HAC length in bits. When LMUL=2 and the implementation only
+supports 8 registers, the HAC register group contains HAC register `h` __n__
+and HAC register `h` __n__+2. The slot `hacmul30` has the LMUL=2 encoding
+reserved. Instructions specifying an LMUL=2 HAC register group with an
+odd-numbered HAC register are reserved.
 
-When LMUL=8, the HAC register group contains eight HAC registers, and
-instructions specifying an LMUL=8 HAC register group using register numbers
-that are not multiples of eight are reserved.
+When LMUL=4 and the implementation supports more than 8 registers, the HAC
+register group contains four sequential HAC registers. When LMUL=4 and the
+implementation only supports 8 registers, the HAC register group contains HAC
+registers `h` __n__, `h` __n__+2, `h` __n__+4, and `h` __n__+6. The slot
+`hacmul[28-30]` has the LMUL=4 encoding reserved. Instructions specifying an
+LMUL=4 HAC register group using HAC register numbers that are not multiples of
+four are reserved.
+
+When LMUL=8 and the implementation supports more than 8 registers, the HAC
+register group contains eight sequential HAC registers. The slots
+`hacmul[24-30]` have the LMUL=8 encoding reserved. Instructions specifying an
+LMUL=8 HAC register group using register numbers that are not multiples of
+eight are reserved.
 
 [wavedrom,,svg]
 ....
@@ -170,14 +183,6 @@ that are not multiples of eight are reserved.
   {bits: 1, name: 'hacmul29_valid'},
 ]}
 ....
-
-An HAC implementation with 8 registers, only has access to even numbered
-register IDs. Moreover, for the same implementation, slot `hacmul14` and all
-odd numbered slots are WPRI.
-
-The slots `hacmul[24-30]` have the LMUL=8 encoding reserved. The slot
-`hacmul[28-30]` has the LMUL=4 encoding reserved. The slot `hacmul30` has the
-LMUL=2 encoding reserved.
 
 The validity of a HAC register group is always given by the least significant
 `hacmul` ID. The remaining bits in the slots of the HAC register group are
